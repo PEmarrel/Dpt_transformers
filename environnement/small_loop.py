@@ -47,33 +47,34 @@ class WorldDisplay:
         """
         Affiche ou met à jour un monde 2D avec des couleurs et un robot.
         """
-        cmap = mcolors.ListedColormap(["white", "black", "red", "blue", "green", "yellow"])
-        bounds = [-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5]
-        norm = mcolors.BoundaryNorm(bounds, cmap.N)
-
-        fig, ax = plt.subplots(figsize=(5, 5))
-        ax.imshow(world, cmap=cmap, norm=norm)
-        ax.set_xticks([])
-        ax.set_yticks([])
-        ax.grid(False)
-
-        # Affichage du robot
-        ax.scatter(robot.y, robot.x, color='orange', s=2000, edgecolors='black', label='Robot')
-
-        triangle_offsets = {
-            0: [(0, -0.1), (0.18, -0.3), (-0.18, -0.3)],  # Haut
-            1: [(0.1, 0), (0.3, -0.18), (0.3, 0.18)],   # Droite
-            2: [(0, 0.1), (0.18, 0.3), (-0.18, 0.3)],   # Bas
-            3: [(-0.1, 0), (-0.3, -0.18), (-0.3, 0.18)],    # Gauche
-        }
-
-        triangle = triangle_offsets[robot.theta]
-        triangle_x = [robot.y + dx for dx, dy in triangle]
-        triangle_y = [robot.x + dy for dx, dy in triangle]
-        ax.fill(triangle_x, triangle_y, color='black', label='Direction')
+        
 
         out.clear_output(wait=True)
         with out:
+            cmap = mcolors.ListedColormap(["white", "black", "red", "blue", "green", "yellow"])
+            bounds = [-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5]
+            norm = mcolors.BoundaryNorm(bounds, cmap.N)
+
+            fig, ax = plt.subplots(figsize=(5, 5))
+            ax.imshow(world, cmap=cmap, norm=norm)
+            ax.set_xticks([])
+            ax.set_yticks([])
+            ax.grid(False)
+
+            # Affichage du robot
+            ax.scatter(robot.y, robot.x, color='orange', s=2000, edgecolors='black', label='Robot')
+
+            triangle_offsets = {
+                0: [(0, -0.1), (0.18, -0.3), (-0.18, -0.3)],  # Haut
+                1: [(0.1, 0), (0.3, -0.18), (0.3, 0.18)],   # Droite
+                2: [(0, 0.1), (0.18, 0.3), (-0.18, 0.3)],   # Bas
+                3: [(-0.1, 0), (-0.3, -0.18), (-0.3, 0.18)],    # Gauche
+            }
+
+            triangle = triangle_offsets[robot.theta]
+            triangle_x = [robot.y + dx for dx, dy in triangle]
+            triangle_y = [robot.x + dy for dx, dy in triangle]
+            ax.fill(triangle_x, triangle_y, color='black', label='Direction')
             plt.show()
         # plt.close(fig)  
 
