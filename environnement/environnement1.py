@@ -1,4 +1,6 @@
-class Environment1:
+from environnement.environnement import Environnement
+
+class Environnement1(Environnement):
     """ In Environment 1, action 0 yields outcome 0, action 1 yields outcome 1 """
     def get_actions(self):
         """Return the list of actions in this environment"""

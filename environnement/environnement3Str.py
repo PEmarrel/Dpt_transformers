@@ -1,4 +1,6 @@
-class Environment3:
+from environnement.environnement import Environnement
+
+class Environnement3(Environnement):
     """ Environment 3 yields outcome 1 only when the agent alternates actions 0 and 1 """
     def __init__(self):
         """ Initializing Environment3 """

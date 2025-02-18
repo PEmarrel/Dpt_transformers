@@ -1,6 +1,7 @@
 import numpy as np
+from environnement.environnement import Environnement
 
-class Environment6:
+class Environnement6(Environnement):
     """ The grid """
     def __init__(self):
         """ Initialize the grid """
