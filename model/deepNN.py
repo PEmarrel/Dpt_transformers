@@ -207,13 +207,16 @@ def train_with_batch(model:nn.Module,
             optimizer.step()
             optimizer.zero_grad()
 
-        acc, loss_val = evaluate(model=model, test_loader=validate_loader, loss_funct=loss_func)
-        history_acc.append(acc)
-        history_val_loss.append(loss_val)
-        if acc > meilleur_acc:
-            meilleur_acc = acc
-            meilleur_model = model
+        if validate_loader:
+            acc, loss_val = evaluate(model=model, test_loader=validate_loader, loss_funct=loss_func)
+            history_acc.append(acc)
+            history_val_loss.append(loss_val)
+            if acc > meilleur_acc:
+                meilleur_acc = acc
+                meilleur_model = model
 
-        if print_:
-            print(f'Epoch {epoch+1}/{nb_epochs}, Accuracy: {acc}')
+            if print_:
+                print(f'Epoch {epoch+1}/{nb_epochs}, Accuracy: {acc}')
+        else:
+            print(f'Epoch {epoch+1}/{nb_epochs}, Loss: {loss.item():.4f}')
     return meilleur_acc, meilleur_model, history_acc, history_val_loss
