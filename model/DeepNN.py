@@ -36,6 +36,8 @@ class DeepNetwork(nn.Module):
         super(DeepNetwork, self).__init__()
         # nn.Linear initialise les poids de manière aléatoire
         print("liste hidden init",hidden_size)
+        self.input_size = input_size
+        self.output_size = output_size
         self.fc1 = nn.Linear(input_size, hidden_size[0])
 
         self.hidden_layers = nn.ModuleList()
