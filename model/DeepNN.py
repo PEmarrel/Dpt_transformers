@@ -43,8 +43,20 @@ class DeepNetwork(nn.Module):
         self.hidden_layers = nn.ModuleList()
         for size in range(len(hidden_size) - 1):
             self.hidden_layers.append(nn.Linear(hidden_size[size], hidden_size[size + 1]))
-
         self.fc4 = nn.Linear(hidden_size[-1], output_size)
+        self._init_weights()
+
+    def _init_weights(self):
+        """
+        Initialisation des poids des couches
+        """
+        for layer in self.hidden_layers:
+            nn.init.xavier_normal_(layer.weight)
+            nn.init.zeros_(layer.bias)
+        nn.init.xavier_normal_(self.fc1.weight)
+        nn.init.zeros_(self.fc1.bias)
+        nn.init.xavier_normal_(self.fc4.weight)
+        nn.init.zeros_(self.fc4.bias)
 
     def forward(self, x):
         # print("x", x)
@@ -160,6 +172,7 @@ def train_with_batch(model:nn.Module,
         optimizer:torch.optim.SGD,
         loss_func:torch.nn.MSELoss,
         nb_epochs:int,
+        threshold:float=None,
         print_:bool=False
         ) -> Tuple[float, nn.Module]:
     """
@@ -218,7 +231,47 @@ def train_with_batch(model:nn.Module,
                 meilleur_model = model
 
             if print_:
-                print(f'Epoch {epoch+1}/{nb_epochs}, Accuracy: {acc}')
+                print(f'Epoch {epoch+1}/{nb_epochs}, Loss: {loss.item():.4f}, Accuracy: {acc}')
         else:
-            print(f'Epoch {epoch+1}/{nb_epochs}, Loss: {loss.item():.4f}')
+            if print_ and epoch % (nb_epochs // 4) == 0:
+                print(f'Epoch {epoch+1}/{nb_epochs}, Loss: {loss.item():.4f}')
+        
+        if threshold and round(loss.item(), 3) < threshold:
+            if print_:
+                if validate_loader:
+                    print(f'Break early Epoch {epoch+1}/{nb_epochs}, Loss: {loss.item():.4f}, Accuracy: {acc}, Validation Loss: {loss_val}')
+                else:
+                    print(f'Break early Epoch {epoch+1}/{nb_epochs}, Loss: {loss.item():.4f}')
+            break
     return meilleur_acc, meilleur_model, history_acc, history_val_loss
+
+def find_no_good(model: nn.Module, test_loader: torch.utils.data.DataLoader) -> tuple[float, float]:
+    """
+    Méthode pour trouver les x qui ne sont pas bien prédit par le modèle
+
+    :param model: le modèle à évaluer
+    :param test_loader: le lecteur de données de test
+    :param loss_funct: la fonction de perte à utiliser pour l'évaluation
+    :param device: le device sur lequel effectuer les calculs
+    :return: une tuple contenant (le taux de réussite, la perte moyenne)
+    """
+    device = next(model.parameters()).device # get device of the model
+
+    no_good = []
+    model.to(device)
+    model.eval()
+
+    with torch.no_grad():  # Pas besoin de calculer les gradients en mode évaluation
+        x:torch.Tensor = None; t:torch.Tensor = None
+        for x, t in test_loader:
+            x, t = x.to(device), t.to(device)
+            # Prédictions
+            y = model(x)
+
+            if len(t.shape) > 1 and t.shape[1] > 1:  # Si les labels sont one-hot encodés
+                t = torch.argmax(t, dim=1)  # On convertit en indices de classes
+            for i in range(t.size(0)):
+                if torch.argmax(y[i]) != t[i]:
+                    no_good.append((x[i], t[i], y[i]))
+
+    return no_good
