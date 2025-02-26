@@ -144,7 +144,7 @@ def see_evolued_acc(acc:list):
         None
     """
     plt.plot(acc)
-    plt.xlabel('Epochs')
+    plt.xlabel('Itérations')
     plt.ylabel('Acc')
     plt.show()
     plt.close()
