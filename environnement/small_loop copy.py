@@ -4,46 +4,11 @@ import matplotlib.colors as mcolors
 from IPython.display import display, update_display
 from ipywidgets import Output
 
-# def _display_world(world, robot):
-#     """
-#     Fct fais avec GPT
-#     Affiche un monde 2D avec des couleurs associées aux valeurs numériques et un robot.
-#     """
-#     plt.close()
-#     # Définition des couleurs personnalisées
-#     cmap = mcolors.ListedColormap(["white", "black", "red", "blue", "green", "yellow"])
-#     bounds = [-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5]  # Délimite chaque couleur
-#     norm = mcolors.BoundaryNorm(bounds, cmap.N)
-    
-#     fig, ax = plt.subplots(figsize=(5, 5))
-#     ax.imshow(world, cmap=cmap, norm=norm)
-#     ax.set_xticks([])
-#     ax.set_yticks([])
-#     ax.grid(False)
-    
-#     # Affichage du robot
-#     ax.scatter(robot.y, robot.x, color='orange', s=2000, edgecolors='black', label='Robot')
-    
-#     triangle_offsets = {
-#         0: [(0, -0.1), (0.18, -0.3), (-0.18, -0.3)],  # Haut
-#         1: [(0.1, 0), (0.3, -0.18), (0.3, 0.18)],   # Droite
-#         2: [(0, 0.1), (0.18, 0.3), (-0.18, 0.3)],   # Bas
-#         3: [(-0.1, 0), (-0.3, -0.18), (-0.3, 0.18)],    # Gauche
-#     }
-    
-#     triangle = triangle_offsets[robot.theta]
-#     triangle_x = [robot.y + dx for dx, dy in triangle]
-#     triangle_y = [robot.x + dy for dx, dy in triangle]
-#     ax.fill(triangle_x, triangle_y, color='black', label='Direction')
-    
-#     # plt.legend()
-#     plt.show()
-
 class WorldDisplay:
     def __init__(self):
-        pass
+        self.display_id = None  # ID pour mise à jour du display
 
-    def show(self, world, robot, out):
+    def show(self, world, robot):
         """
         Affiche ou met à jour un monde 2D avec des couleurs et un robot.
         """
@@ -72,10 +37,13 @@ class WorldDisplay:
         triangle_y = [robot.x + dy for dx, dy in triangle]
         ax.fill(triangle_x, triangle_y, color='black', label='Direction')
 
-        out.clear_output(wait=True)
-        with out:
-            plt.show()
-        # plt.close(fig)  
+        if self.display_id is None:
+            print("je pense que c'est mon premier affichage")
+            self.display_id = display(fig, display_id=True)  # Premier affichage
+        else:
+            update_display(fig, display_id=self.display_id)  # Mise à jour
+
+
 
 class state_robot:
     def __init__(self, x, y, theta):
@@ -131,8 +99,8 @@ class small_loop:
             "turn_left",
             "turn_right",
             "feel_front",
-            # "feel_left",
-            # "feel_right",
+            "feel_left",
+            "feel_right",
         ]
 
         self.outcomes = {
@@ -155,6 +123,8 @@ class small_loop:
             raise ValueError("The robot is in a wall")
         self.robot = state_robot(x, y, theta)
 
+        self.display = WorldDisplay()
+
     def get_actions(self):
         return self.all_actions
     
@@ -164,11 +134,10 @@ class small_loop:
     def get_world(self):
         return self.world
     
-    def get_robot(self):
-        return self.robot
-    
     def display_world(self):
-        raise NotImplementedError("This method is not implemented yet")
+        see_world = self.world.copy()
+        # see_world[self.robot.x, self.robot.y] = 3
+        self.display.show(see_world, self.robot)
 
     def _forward(self):
         """
@@ -221,41 +190,41 @@ class small_loop:
             return self.outcomes[1]
         return self.outcomes[0]
     
-    # def _feel_left(self):
-    #     """
-    #     Feel the case on the left of the robot
-    #     """
-    #     x, y = self.robot.x, self.robot.y
-    #     if self.robot.theta == 0:
-    #         y -= 1
-    #     elif self.robot.theta == 1:
-    #         x -= 1
-    #     elif self.robot.theta == 2:
-    #         y += 1
-    #     elif self.robot.theta == 3:
-    #         x += 1
+    def _feel_left(self):
+        """
+        Feel the case on the left of the robot
+        """
+        x, y = self.robot.x, self.robot.y
+        if self.robot.theta == 0:
+            y -= 1
+        elif self.robot.theta == 1:
+            x -= 1
+        elif self.robot.theta == 2:
+            y += 1
+        elif self.robot.theta == 3:
+            x += 1
 
-    #     if self.world[x, y] == 1:
-    #         return self.outcomes[1]
-    #     return self.outcomes[0]
+        if self.world[x, y] == 1:
+            return self.outcomes[1]
+        return self.outcomes[0]
     
-    # def _feel_right(self):
-    #     """
-    #     Feel the case on the right of the robot
-    #     """
-    #     x, y = self.robot.x, self.robot.y
-    #     if self.robot.theta == 0:
-    #         y += 1
-    #     elif self.robot.theta == 1:
-    #         x += 1
-    #     elif self.robot.theta == 2:
-    #         y -= 1
-    #     elif self.robot.theta == 3:
-    #         x -= 1
+    def _feel_right(self):
+        """
+        Feel the case on the right of the robot
+        """
+        x, y = self.robot.x, self.robot.y
+        if self.robot.theta == 0:
+            y += 1
+        elif self.robot.theta == 1:
+            x += 1
+        elif self.robot.theta == 2:
+            y -= 1
+        elif self.robot.theta == 3:
+            x -= 1
 
-    #     if self.world[x, y] == 1:
-    #         return self.outcomes[1]
-    #     return self.outcomes[0]
+        if self.world[x, y] == 1:
+            return self.outcomes[1]
+        return self.outcomes[0]
 
     def make_action(self, action):
         """
@@ -274,10 +243,10 @@ class small_loop:
                 return self._turn_right()
             case "feel_front":
                 return self._feel_front()
-            # case "feel_left":
-            #     return self._feel_left()
-            # case "feel_right":
-            #     return self._feel_right()
+            case "feel_left":
+                return self._feel_left()
+            case "feel_right":
+                return self._feel_right()
             case _:
                 raise ValueError(f"Action not recognized, you have '{action}'please choose between {self.all_actions}")
             
