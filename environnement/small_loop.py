@@ -266,21 +266,17 @@ class small_loop:
 
         return: bool true if the robot can execute the action or feel empty case, false otherwise
         """
-        match action:
-            case "forward":
+        if action == "forward":
                 return self._forward()
-            case "turn_left":
+        if action == "turn_left":
                 return self._turn_left()
-            case "turn_right":
+        if action == "turn_right":
                 return self._turn_right()
-            case "feel_front":
+        if action == "feel_front":
                 return self._feel_front()
-            # case "feel_left":
-            #     return self._feel_left()
-            # case "feel_right":
-            #     return self._feel_right()
-            case _:
-                raise ValueError(f"Action not recognized, you have '{action}'please choose between {self.all_actions}")
+
+
+        raise ValueError(f"Action not recognized, you have '{action}'please choose between {self.all_actions}")
             
     def outcome(self, action):
         """
