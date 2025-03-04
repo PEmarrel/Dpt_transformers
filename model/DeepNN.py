@@ -51,17 +51,12 @@ class DeepNetwork(nn.Module):
         Initialisation des poids des couches
         """
         for layer in self.hidden_layers:
-            nn.init.xavier_normal_(layer.weight)
-            nn.init.zeros_(layer.bias)
-        nn.init.xavier_normal_(self.fc1.weight)
-        nn.init.zeros_(self.fc1.bias)
-        nn.init.xavier_normal_(self.fc4.weight)
-        nn.init.zeros_(self.fc4.bias)
+            nn.init.kaiming_normal_(layer.weight, mode='fan_out', nonlinearity='relu')
+        nn.init.kaiming_normal_(self.fc1.weight, mode='fan_out', nonlinearity='relu')
+        nn.init.kaiming_normal_(self.fc4.weight, mode='fan_out', nonlinearity='relu')
 
     def forward(self, x):
-        # print("x", x)
         x = nn.functional.relu(self.fc1(x))
-        # print("x", x)
         for layer in self.hidden_layers:
             x = nn.functional.relu(layer(x))
         x = self.fc4(x)
@@ -192,7 +187,14 @@ def train_with_batch(model:nn.Module,
     :param loss_func: la fonction de loss
     :param nb_epochs: le nombre d'époques
     :param print_: afficher ou non les résultats
-    :return: le taux de réussite final et le meilleur modèle
+    :return: **loss** last loss of train
+    :return: **last_acc** last accuracy of model
+    :return: **meilleur_acc** best accuracy of model
+    :return: **meilleur_model** best model
+    :return: **history_acc** list of accuracy for each epoch
+    :return: **history_val_loss** list of validation loss for
+    each epoch
+    [...]
     """
     device = next(model.parameters()).device # get device of the model
     meilleur_acc:int = 0
@@ -221,8 +223,7 @@ def train_with_batch(model:nn.Module,
             loss.backward()
             optimizer.step()
             optimizer.zero_grad()
-
-        if validate_loader:
+        if validate_loader :
             acc, loss_val = evaluate(model=model, test_loader=validate_loader, loss_funct=loss_func)
             history_acc.append(acc)
             history_val_loss.append(loss_val)
@@ -243,7 +244,12 @@ def train_with_batch(model:nn.Module,
                 else:
                     print(f'Break early Epoch {epoch+1}/{nb_epochs}, Loss: {loss.item():.4f}')
             break
-    return meilleur_acc, meilleur_model, history_acc, history_val_loss
+    if validate_loader:
+        last_acc, last_loss = evaluate(model=model, test_loader=validate_loader, loss_funct=loss_func)
+    else:
+        last_acc = None
+        last_loss =None
+    return loss, last_acc, meilleur_acc, meilleur_model, history_acc, history_val_loss
 
 def find_no_good(model: nn.Module, test_loader: torch.utils.data.DataLoader) -> tuple[float, float]:
     """
