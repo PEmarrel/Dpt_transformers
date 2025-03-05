@@ -3,80 +3,112 @@ import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 from IPython.display import display, update_display
 from ipywidgets import Output
+import os
 
-# def _display_world(world, robot):
-#     """
-#     Fct fais avec GPT
-#     Affiche un monde 2D avec des couleurs associées aux valeurs numériques et un robot.
-#     """
-#     plt.close()
-#     # Définition des couleurs personnalisées
-#     cmap = mcolors.ListedColormap(["white", "black", "red", "blue", "green", "yellow"])
-#     bounds = [-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5]  # Délimite chaque couleur
-#     norm = mcolors.BoundaryNorm(bounds, cmap.N)
-    
-#     fig, ax = plt.subplots(figsize=(5, 5))
-#     ax.imshow(world, cmap=cmap, norm=norm)
-#     ax.set_xticks([])
-#     ax.set_yticks([])
-#     ax.grid(False)
-    
-#     # Affichage du robot
-#     ax.scatter(robot.y, robot.x, color='orange', s=2000, edgecolors='black', label='Robot')
-    
-#     triangle_offsets = {
-#         0: [(0, -0.1), (0.18, -0.3), (-0.18, -0.3)],  # Haut
-#         1: [(0.1, 0), (0.3, -0.18), (0.3, 0.18)],   # Droite
-#         2: [(0, 0.1), (0.18, 0.3), (-0.18, 0.3)],   # Bas
-#         3: [(-0.1, 0), (-0.3, -0.18), (-0.3, 0.18)],    # Gauche
-#     }
-    
-#     triangle = triangle_offsets[robot.theta]
-#     triangle_x = [robot.y + dx for dx, dy in triangle]
-#     triangle_y = [robot.x + dy for dx, dy in triangle]
-#     ax.fill(triangle_x, triangle_y, color='black', label='Direction')
-    
-#     # plt.legend()
-#     plt.show()
+def _display_world(world, robot, out:Output):
+    """
+    Affiche un monde 2D avec des couleurs associées aux valeurs numériques et un robot.
+    """
+    cmap = mcolors.ListedColormap(["white", "black", "red", "blue", "green", "yellow"])
+    bounds = [-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5]
+    norm = mcolors.BoundaryNorm(bounds, cmap.N)
 
-class WorldDisplay:
-    def __init__(self):
-        pass
+    fig, ax = plt.subplots(figsize=(5, 5))
+    ax.imshow(world, cmap=cmap, norm=norm)
+    # ax.set_xticks([])
+    # ax.set_yticks([])
+    ax.grid(False)
 
-    def show(self, world, robot, out):
-        """
-        Affiche ou met à jour un monde 2D avec des couleurs et un robot.
-        """
-        # try:
-        #     out.clear_output(wait=True)
-        # except:
-        #     pass
-        # with out:
-        cmap = mcolors.ListedColormap(["white", "black", "red", "blue", "green", "yellow"])
-        bounds = [-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5]
-        norm = mcolors.BoundaryNorm(bounds, cmap.N)
+    # Affichage du robot
+    ax.scatter(robot.y, robot.x, color='orange', s=2000, edgecolors='black', label='Robot')
 
-        fig, ax = plt.subplots(figsize=(5, 5))
-        ax.imshow(world, cmap=cmap, norm=norm)
-        ax.set_xticks([])
-        ax.set_yticks([])
-        ax.grid(False)
+    triangle_offsets = {
+        0: [(0, -0.1), (0.18, -0.3), (-0.18, -0.3)],  # Haut
+        1: [(0.1, 0), (0.3, -0.18), (0.3, 0.18)],   # Droite
+        2: [(0, 0.1), (0.18, 0.3), (-0.18, 0.3)],   # Bas
+        3: [(-0.1, 0), (-0.3, -0.18), (-0.3, 0.18)],    # Gauche
+    }
 
-        # Affichage du robot
-        ax.scatter(robot.y, robot.x, color='orange', s=2000, edgecolors='black', label='Robot')
-
-        triangle_offsets = {
-            0: [(0, -0.1), (0.18, -0.3), (-0.18, -0.3)],  # Haut
-            1: [(0.1, 0), (0.3, -0.18), (0.3, 0.18)],   # Droite
-            2: [(0, 0.1), (0.18, 0.3), (-0.18, 0.3)],   # Bas
-            3: [(-0.1, 0), (-0.3, -0.18), (-0.3, 0.18)],    # Gauche
-        }
-
-        triangle = triangle_offsets[robot.theta]
-        triangle_x = [robot.y + dx for dx, dy in triangle]
-        triangle_y = [robot.x + dy for dx, dy in triangle]
-        ax.fill(triangle_x, triangle_y, color='black', label='Direction')
+    triangle = triangle_offsets[robot.theta]
+    triangle_x = [robot.y + dx for dx, dy in triangle]
+    triangle_y = [robot.x + dy for dx, dy in triangle]
+    ax.fill(triangle_x, triangle_y, color='black', label='Direction')
+    out.clear_output()
+    with out:
         plt.show()
+    plt.close(fig)
+
+def _save_world(world, robot, path):
+    """
+    Affiche un monde 2D avec des couleurs associées aux valeurs numériques et un robot.
+    """
+    cmap = mcolors.ListedColormap(["white", "black", "red", "blue", "green", "yellow"])
+    bounds = [-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5]
+    norm = mcolors.BoundaryNorm(bounds, cmap.N)
+
+    fig, ax = plt.subplots(figsize=(5, 5))
+    ax.imshow(world, cmap=cmap, norm=norm)
+    # ax.set_xticks([])
+    # ax.set_yticks([])
+    ax.grid(False)
+
+    # Affichage du robot
+    ax.scatter(robot.y, robot.x, color='orange', s=2000, edgecolors='black', label='Robot')
+
+    triangle_offsets = {
+        0: [(0, -0.1), (0.18, -0.3), (-0.18, -0.3)],  # Haut
+        1: [(0.1, 0), (0.3, -0.18), (0.3, 0.18)],   # Droite
+        2: [(0, 0.1), (0.18, 0.3), (-0.18, 0.3)],   # Bas
+        3: [(-0.1, 0), (-0.3, -0.18), (-0.3, 0.18)],    # Gauche
+    }
+
+    triangle = triangle_offsets[robot.theta]
+    triangle_x = [robot.y + dx for dx, dy in triangle]
+    triangle_y = [robot.x + dy for dx, dy in triangle]
+    ax.fill(triangle_x, triangle_y, color='black', label='Direction')
+    # add title to path + number of image + png
+    number = str(len(os.listdir(path)))
+    # Add number in plot
+    ax.text(0, 0, number, fontsize=12, color='White')
+    plt.savefig(path + '/' + number + ".png")
+    plt.close(fig)
+    
+# class WorldDisplay:
+#     def __init__(self):
+#         pass
+
+#     def show(self, world, robot, out):
+#         """
+#         Affiche ou met à jour un monde 2D avec des couleurs et un robot.
+#         """
+
+#         cmap = mcolors.ListedColormap(["white", "black", "red", "blue", "green", "yellow"])
+#         bounds = [-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5]
+#         norm = mcolors.BoundaryNorm(bounds, cmap.N)
+
+#         fig, ax = plt.subplots(figsize=(5, 5))
+#         ax.imshow(world, cmap=cmap, norm=norm)
+#         # ax.set_xticks([])
+#         # ax.set_yticks([])
+#         ax.grid(False)
+
+#         # Affichage du robot
+#         ax.scatter(robot.y, robot.x, color='orange', s=2000, edgecolors='black', label='Robot')
+
+#         triangle_offsets = {
+#             0: [(0, -0.1), (0.18, -0.3), (-0.18, -0.3)],  # Haut
+#             1: [(0.1, 0), (0.3, -0.18), (0.3, 0.18)],   # Droite
+#             2: [(0, 0.1), (0.18, 0.3), (-0.18, 0.3)],   # Bas
+#             3: [(-0.1, 0), (-0.3, -0.18), (-0.3, 0.18)],    # Gauche
+#         }
+
+#         triangle = triangle_offsets[robot.theta]
+#         triangle_x = [robot.y + dx for dx, dy in triangle]
+#         triangle_y = [robot.x + dy for dx, dy in triangle]
+#         ax.fill(triangle_x, triangle_y, color='black', label='Direction')
+#         out.clear_output(wait=True)
+#         with out:
+#             plt.show()
         # plt.close(fig)  
 
 class state_robot:
@@ -123,7 +155,6 @@ class state_robot:
 
 
 class small_loop:
-
     def __init__(self, x=0, y=0, theta=0, world=None):
         """
         Class to represent the environnement of the robot and robot
@@ -157,6 +188,9 @@ class small_loop:
             raise ValueError("The robot is in a wall")
         self.robot = state_robot(x, y, theta)
 
+        self._box_obstacle_encountered = []
+        self._box_feel = []        
+
     def get_actions(self):
         return self.all_actions
     
@@ -169,8 +203,29 @@ class small_loop:
     def get_robot(self):
         return self.robot
     
-    def display_world(self):
-        raise NotImplementedError("This method is not implemented yet")
+    def display_world(self, out:Output):
+        """
+        Display the world with the robot
+        """
+        world_seen = self.world.copy()
+        for x, y in self._box_obstacle_encountered:
+            world_seen[x, y] = 2
+        for x, y in self._box_feel:
+            world_seen[x, y] = 3
+        _display_world(world_seen, self.robot, out)
+        
+    def save_world(self, path="imgToGif"):
+        """
+        Save the world (plot) in a file
+        """
+        world_seen = self.world.copy()
+        for x, y in self._box_obstacle_encountered:
+            world_seen[x, y] = 2
+        for x, y in self._box_feel:
+            world_seen[x, y] = 3
+
+        _save_world(world_seen, self.robot, path)
+        
 
     def _forward(self):
         """
@@ -187,6 +242,7 @@ class small_loop:
             y -= 1
 
         if self.world[x, y] == 1:
+            self._box_obstacle_encountered.append((x, y))
             return self.outcomes[1]
         self.robot.x, self.robot.y = x, y
         return self.outcomes[0]
@@ -218,7 +274,7 @@ class small_loop:
             x += 1
         elif self.robot.theta == 3:
             y -= 1
-
+        self._box_feel.append((x, y))
         if self.world[x, y] == 1:
             return self.outcomes[1]
         return self.outcomes[0]
@@ -267,6 +323,8 @@ class small_loop:
 
         return: bool true if the robot can execute the action or feel empty case, false otherwise
         """
+        self._box_obstacle_encountered = []
+        self._box_feel = []
         if action == "forward":
                 return self._forward()
         if action == "turn_left":
