@@ -5,10 +5,8 @@ from IPython.display import display, update_display
 from ipywidgets import Output
 import os
 
-def _display_world(world, robot, out:Output):
-    """
-    Affiche un monde 2D avec des couleurs associées aux valeurs numériques et un robot.
-    """
+
+def creat_plot(world, robot):
     cmap = mcolors.ListedColormap(["white", "black", "red", "blue", "green", "yellow"])
     bounds = [-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5]
     norm = mcolors.BoundaryNorm(bounds, cmap.N)
@@ -20,21 +18,44 @@ def _display_world(world, robot, out:Output):
     ax.grid(False)
 
     # Affichage du robot
-    ax.scatter(robot.y, robot.x, color='orange', s=2000, edgecolors='black', label='Robot')
+    # ax.scatter(robot.y, robot.x, color='orange', s=2000, edgecolors='black', label='Robot')
 
-    triangle_offsets = {
-        0: [(0, -0.1), (0.18, -0.3), (-0.18, -0.3)],  # Haut
-        1: [(0.1, 0), (0.3, -0.18), (0.3, 0.18)],   # Droite
-        2: [(0, 0.1), (0.18, 0.3), (-0.18, 0.3)],   # Bas
-        3: [(-0.1, 0), (-0.3, -0.18), (-0.3, 0.18)],    # Gauche
-    }
+    # triangle_offsets = {
+    #     0: [(0, -0.1), (0.18, -0.3), (-0.18, -0.3)],  # Haut
+    #     1: [(0.1, 0), (0.3, -0.18), (0.3, 0.18)],   # Droite
+    #     2: [(0, 0.1), (0.18, 0.3), (-0.18, 0.3)],   # Bas
+    #     3: [(-0.1, 0), (-0.3, -0.18), (-0.3, 0.18)],    # Gauche
+    # }
+    
+    if robot.theta == 0:
+        plt.scatter(robot.x, robot.y, s=1000, marker='^')
+        tip = (robot.x, robot.y-0.35)
+    elif robot.theta == 1:
+        plt.scatter(robot.x, robot.y, s=1000, marker='>')
+        tip = (robot.x+0.35, robot.y)
+    elif robot.theta == 2:
+        plt.scatter(robot.x, robot.y, s=1000, marker='v')
+        tip = (robot.x, robot.y+0.35)
+    elif robot.theta == 3:
+        plt.scatter(robot.x, robot.y, s=1000, marker='<')
+        tip = (robot.x-0.35, robot.y)
 
-    triangle = triangle_offsets[robot.theta]
-    triangle_x = [robot.y + dx for dx, dy in triangle]
-    triangle_y = [robot.x + dy for dx, dy in triangle]
-    ax.fill(triangle_x, triangle_y, color='black', label='Direction')
-    out.clear_output()
-    with out:
+    # ax.fill(*zip(*triangle), color='orange', edgecolor='black')
+    ax.scatter(*tip, color='green', s=50)  # Tip of the triangle in red
+
+    return fig, ax
+    
+    
+def _display_world(world, robot, out:Output):
+    """
+    Affiche un monde 2D avec des couleurs associées aux valeurs numériques et un robot.
+    """
+    fig, ax = creat_plot(world, robot)
+    if out is not None:
+        out.clear_output()
+        with out:
+            plt.show()
+    else:
         plt.show()
     plt.close(fig)
 
@@ -42,30 +63,7 @@ def _save_world(world, robot, path):
     """
     Affiche un monde 2D avec des couleurs associées aux valeurs numériques et un robot.
     """
-    cmap = mcolors.ListedColormap(["white", "black", "red", "blue", "green", "yellow"])
-    bounds = [-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5]
-    norm = mcolors.BoundaryNorm(bounds, cmap.N)
-
-    fig, ax = plt.subplots(figsize=(5, 5))
-    ax.imshow(world, cmap=cmap, norm=norm)
-    # ax.set_xticks([])
-    # ax.set_yticks([])
-    ax.grid(False)
-
-    # Affichage du robot
-    ax.scatter(robot.y, robot.x, color='orange', s=2000, edgecolors='black', label='Robot')
-
-    triangle_offsets = {
-        0: [(0, -0.1), (0.18, -0.3), (-0.18, -0.3)],  # Haut
-        1: [(0.1, 0), (0.3, -0.18), (0.3, 0.18)],   # Droite
-        2: [(0, 0.1), (0.18, 0.3), (-0.18, 0.3)],   # Bas
-        3: [(-0.1, 0), (-0.3, -0.18), (-0.3, 0.18)],    # Gauche
-    }
-
-    triangle = triangle_offsets[robot.theta]
-    triangle_x = [robot.y + dx for dx, dy in triangle]
-    triangle_y = [robot.x + dy for dx, dy in triangle]
-    ax.fill(triangle_x, triangle_y, color='black', label='Direction')
+    fig, ax = creat_plot(world, robot)
     # add title to path + number of image + png
     number = str(len(os.listdir(path)))
     # Add number in plot
@@ -203,15 +201,15 @@ class small_loop:
     def get_robot(self):
         return self.robot
     
-    def display_world(self, out:Output):
+    def display_world(self, out:Output=None):
         """
         Display the world with the robot
         """
         world_seen = self.world.copy()
         for x, y in self._box_obstacle_encountered:
-            world_seen[x, y] = 2
+            world_seen[y, x] = 2
         for x, y in self._box_feel:
-            world_seen[x, y] = 3
+            world_seen[y, x] = 3
         _display_world(world_seen, self.robot, out)
         
     def save_world(self, path="imgToGif"):
@@ -220,9 +218,9 @@ class small_loop:
         """
         world_seen = self.world.copy()
         for x, y in self._box_obstacle_encountered:
-            world_seen[x, y] = 2
+            world_seen[y, x] = 2
         for x, y in self._box_feel:
-            world_seen[x, y] = 3
+            world_seen[y, x] = 3
 
         _save_world(world_seen, self.robot, path)
         
@@ -233,15 +231,15 @@ class small_loop:
         """
         x, y = self.robot.x, self.robot.y
         if self.robot.theta == 0:
-            x -= 1
-        elif self.robot.theta == 1:
-            y += 1
-        elif self.robot.theta == 2:
-            x += 1
-        elif self.robot.theta == 3:
             y -= 1
+        elif self.robot.theta == 1:
+            x += 1
+        elif self.robot.theta == 2:
+            y += 1
+        elif self.robot.theta == 3:
+            x -= 1
 
-        if self.world[x, y] == 1:
+        if self.world[y, x] == 1:
             self._box_obstacle_encountered.append((x, y))
             return self.outcomes[1]
         self.robot.x, self.robot.y = x, y
@@ -267,15 +265,15 @@ class small_loop:
         """
         x, y = self.robot.x, self.robot.y
         if self.robot.theta == 0:
-            x -= 1
-        elif self.robot.theta == 1:
-            y += 1
-        elif self.robot.theta == 2:
-            x += 1
-        elif self.robot.theta == 3:
             y -= 1
+        elif self.robot.theta == 1:
+            x += 1
+        elif self.robot.theta == 2:
+            y += 1
+        elif self.robot.theta == 3:
+            x -= 1
         self._box_feel.append((x, y))
-        if self.world[x, y] == 1:
+        if self.world[y, x] == 1:
             return self.outcomes[1]
         return self.outcomes[0]
     
