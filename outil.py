@@ -3,6 +3,13 @@ import matplotlib.pyplot as plt
 
 from environnement.environnement import Environnement as env
 
+def subfinder(mylist, pattern):
+    matches = []
+    for i in range(len(mylist)):
+        if mylist[i] == pattern[0] and mylist[i:i+len(pattern)] == pattern:
+            matches.append(pattern)
+    return matches
+
 def inter_action_and_feedback_size(history:list, size:int):
     """
     Transform history into input and target.
