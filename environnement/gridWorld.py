@@ -293,7 +293,7 @@ class gridWord:
             y += 1
             
         self._box_feel.append((x, y))
-        if self.world[x, y] == 1:
+        if self.world[y, x] == 1:
             return self.outcomes[1]
         return self.outcomes[0]
     
@@ -312,7 +312,7 @@ class gridWord:
             y -= 1
             
         self._box_feel.append((x, y))
-        if self.world[x, y] == 1:
+        if self.world[y, x] == 1:
             return self.outcomes[1]
         return self.outcomes[0]
 
