@@ -184,6 +184,8 @@ class gridWord:
         # Check if the robot is in a wall
         if self.world[x, y] == 1:
             raise ValueError("The robot is in a wall")
+        print(f"The robot is in : { self.world[x, y]}  x: {x} y: {y}")
+        print(f"World : {self.world}")
         self.robot = state_robot(x, y, theta)
 
         self._box_obstacle_encountered = []
@@ -264,13 +266,13 @@ class gridWord:
         """
         x, y = self.robot.x, self.robot.y
         if self.robot.theta == 0:
-            x += 1
+            y -= 1
         elif self.robot.theta == 1:
-            y += 1
+            x += 1
         elif self.robot.theta == 2:
-            x -= 1
-        elif self.robot.theta == 3:
             y += 1
+        elif self.robot.theta == 3:
+            x -= 1
         self._box_feel.append((x, y))
         if self.world[y, x] == 1:
             return self.outcomes[1]
