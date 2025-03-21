@@ -152,7 +152,7 @@ class state_robot:
         return hash((self.x, self.y, self.theta))
 
 
-class gridWord:
+class gridWorld:
     def __init__(self, x=0, y=0, theta=0, world=None):
         """
         Class to represent the environnement of the robot and robot

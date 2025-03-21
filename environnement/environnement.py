@@ -21,3 +21,15 @@ class Environnement(ABC):
         Function abstract to have soecific mecansim of outcome
         """
         pass
+    
+    def save_world(self):
+        """
+        Function to save the world
+        """
+        pass
+    
+    def display_world(self):
+        """
+        Function to display the world
+        """
+        pass
