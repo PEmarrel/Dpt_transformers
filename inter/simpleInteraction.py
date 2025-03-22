@@ -14,10 +14,10 @@ class simpleInteraction:
         return f'{self.action}{self.outcome}'
 
     def __str__(self):
-        return f'{self.action}{self.outcome}:{self.valence}'
+        return f'{self.action}{self.outcome}'
 
     def __repr__(self):
-        return f'{self.action}{self.outcome} => {self.valence}'
+        return f'{self.action}{self.outcome}'
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -27,3 +27,4 @@ class simpleInteraction:
     
     def __hash__(self):
         return hash(self.key())
+    

@@ -133,3 +133,54 @@ class CustomDataSetRNN(Dataset):
         x = torch.tensor(x, dtype=torch.int)
         label = torch.tensor(label)
         return x, label
+    
+class CustomDataSetTextGen(Dataset):
+    def __init__(self, actions:list, outcomes:list, dim_out:int, context_lenght:int, tokenizer=None):
+        """
+        Creates a custom dataset
+
+        :param actions: list of actions
+        :param outcomes: list of outcomes
+        :param context_lenght: the length of the context
+        :param tokenizer: tokenizer to encode the actions and outcomes
+        """
+        # Je ne suis pas sur d'y garder
+        assert context_lenght % 2 != 0, "context_lenght must be odd"
+        assert len(actions) == len(outcomes), "actions and outcomes must have the same length"
+        assert context_lenght <= len(actions) * 2, "context_lenght must be less than or equal to the length of actions * 2"
+        assert context_lenght > 0, "context_lenght can't be negative or zero"
+
+        self.actions = actions
+        self.outcomes = outcomes
+        self.context_lenght = context_lenght
+        self.tokenizer = tokenizer
+        self.dim_out = dim_out
+
+    def create_x(self, idx):
+        gap = (self.context_lenght - 1) // 2
+        x = []
+        for i in range(idx, idx + gap):
+            x.append(self.actions[i])
+            x.append(self.outcomes[i])
+        x.append(self.actions[idx + gap])
+        if self.tokenizer is not None:
+            x = self.tokenizer.encode(x)
+        return x
+        
+                
+    def __len__(self):
+        gap = (self.context_lenght + 1) // 2
+        return len(self.actions) + 1 - gap
+
+    def __getitem__(self, idx):
+        """
+        Get the item at the index idx
+
+        :param idx: index
+        :return: x
+        """
+        x = []
+        x = self.create_x(idx)
+        x = torch.tensor(x, dtype=torch.int)
+        return x
+

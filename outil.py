@@ -8,6 +8,7 @@ def subfinder(mylist, pattern):
     for i in range(len(mylist)):
         if mylist[i] == pattern[0] and mylist[i:i+len(pattern)] == pattern:
             matches.append(pattern)
+            return matches
     return matches
 
 def inter_action_and_feedback_size(history:list, size:int):
@@ -155,7 +156,17 @@ def see_evolued_acc(acc:list):
     plt.ylabel('Acc')
     plt.show()
     plt.close()
-
+    
+def save_evolued_acc(acc:list, path:str="acc.png"):
+    """
+    Save the evolution of train acc for one epoch
+    """
+    plt.plot(acc)
+    plt.xlabel('Itérations')
+    plt.ylabel('Acc')
+    plt.savefig(path)
+    plt.close()
+    
 def create_dico_numerate_word(all_words):
     """
     Fonction qui crée un dictionnaire avec les mots et leur index
@@ -164,3 +175,16 @@ def create_dico_numerate_word(all_words):
     for i, word in enumerate(all_words):
         dico[word] = i
     return dico
+
+def find_sub_list(liste):
+    pattern = {}
+    
+    for i in range(0, len(liste) - 4, 2):
+        if pattern.get(str(liste[i:i+3])) == None:
+            pattern[str(liste[i:i+3])] = {"fb":liste[i + 3], "count":1}
+        else:
+            if pattern[str(liste[i:i+3])]["count"] != -1:
+                pattern[str(liste[i:i+3])]["count"] += 1
+            if pattern[str(liste[i:i+3])]["fb"] != liste[i + 3]:
+                pattern[str(liste[i:i+3])]["count"] = -1
+    return pattern
