@@ -45,7 +45,7 @@ class LSTM_Classifeur(nn.Module):
         return self.fc_out(output), hidden_out, mem_out
     
 class LSTM_GenText(nn.Module):
-    def __init__(self, num_emb, num_layers=1, emb_size=128, hidden_size=128):
+    def __init__(self, num_emb, num_layers=1, emb_size=128, hidden_size=128, dropout=0.25):
         super(LSTM_GenText, self).__init__()
         
         self.embedding = nn.Embedding(num_emb, emb_size)
@@ -56,12 +56,12 @@ class LSTM_GenText(nn.Module):
                                      nn.Linear(emb_size, emb_size))
         
         self.lstm = nn.LSTM(input_size=emb_size, hidden_size=hidden_size, 
-                            num_layers=num_layers, batch_first=True, dropout=0.25)
+                            num_layers=num_layers, batch_first=True, dropout=dropout)
 
         self.mlp_out = nn.Sequential(nn.Linear(hidden_size, hidden_size//2),
                                      nn.LayerNorm(hidden_size//2),
                                      nn.ELU(),
-                                     nn.Dropout(0.5),
+                                     nn.Dropout(dropout),
                                      nn.Linear(hidden_size//2, num_emb))
         
     def forward(self, input_seq, hidden_in, mem_in):

@@ -2,6 +2,7 @@ class SimpleTokenizerV1:
     
     def __init__(self, vocab):
         self.str_to_int = vocab
+        self.size_vocab = len(vocab)
         self.int_to_str = {i:s for s,i in vocab.items()}
         
     def add(self, word):
