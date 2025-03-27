@@ -1,156 +1,8 @@
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.colors as mcolors
-from IPython.display import display, update_display
-from ipywidgets import Output
 import os
 
-
-def creat_plot(world, robot):
-    cmap = mcolors.ListedColormap(["white", "black", "red", "blue", "green", "yellow"])
-    bounds = [-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5]
-    norm = mcolors.BoundaryNorm(bounds, cmap.N)
-
-    fig, ax = plt.subplots(figsize=(5, 5))
-    ax.imshow(world, cmap=cmap, norm=norm)
-    # ax.set_xticks([])
-    # ax.set_yticks([])
-    ax.grid(False)
-
-    # Affichage du robot
-    # ax.scatter(robot.y, robot.x, color='orange', s=2000, edgecolors='black', label='Robot')
-
-    # triangle_offsets = {
-    #     0: [(0, -0.1), (0.18, -0.3), (-0.18, -0.3)],  # Haut
-    #     1: [(0.1, 0), (0.3, -0.18), (0.3, 0.18)],   # Droite
-    #     2: [(0, 0.1), (0.18, 0.3), (-0.18, 0.3)],   # Bas
-    #     3: [(-0.1, 0), (-0.3, -0.18), (-0.3, 0.18)],    # Gauche
-    # }
-    
-    if robot.theta == 0:
-        plt.scatter(robot.x, robot.y, s=1000, marker='^')
-        tip = (robot.x, robot.y-0.35)
-    elif robot.theta == 1:
-        plt.scatter(robot.x, robot.y, s=1000, marker='>')
-        tip = (robot.x+0.35, robot.y)
-    elif robot.theta == 2:
-        plt.scatter(robot.x, robot.y, s=1000, marker='v')
-        tip = (robot.x, robot.y+0.35)
-    elif robot.theta == 3:
-        plt.scatter(robot.x, robot.y, s=1000, marker='<')
-        tip = (robot.x-0.35, robot.y)
-
-    # ax.fill(*zip(*triangle), color='orange', edgecolor='black')
-    ax.scatter(*tip, color='green', s=50)  # Tip of the triangle in red
-
-    return fig, ax
-    
-    
-def _display_world(world, robot, out:Output):
-    """
-    Affiche un monde 2D avec des couleurs associées aux valeurs numériques et un robot.
-    """
-    fig, ax = creat_plot(world, robot)
-    if out is not None:
-        out.clear_output()
-        with out:
-            plt.show()
-    else:
-        plt.show()
-    plt.close(fig)
-
-def _save_world(world, robot, path):
-    """
-    Affiche un monde 2D avec des couleurs associées aux valeurs numériques et un robot.
-    """
-    fig, ax = creat_plot(world, robot)
-    # add title to path + number of image + png
-    number = str(len(os.listdir(path)))
-    # Add number in plot
-    ax.text(0, 0, number, fontsize=12, color='White')
-    plt.savefig(path + '/' + number + ".png")
-    plt.close(fig)
-    
-# class WorldDisplay:
-#     def __init__(self):
-#         pass
-
-#     def show(self, world, robot, out):
-#         """
-#         Affiche ou met à jour un monde 2D avec des couleurs et un robot.
-#         """
-
-#         cmap = mcolors.ListedColormap(["white", "black", "red", "blue", "green", "yellow"])
-#         bounds = [-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5]
-#         norm = mcolors.BoundaryNorm(bounds, cmap.N)
-
-#         fig, ax = plt.subplots(figsize=(5, 5))
-#         ax.imshow(world, cmap=cmap, norm=norm)
-#         # ax.set_xticks([])
-#         # ax.set_yticks([])
-#         ax.grid(False)
-
-#         # Affichage du robot
-#         ax.scatter(robot.y, robot.x, color='orange', s=2000, edgecolors='black', label='Robot')
-
-#         triangle_offsets = {
-#             0: [(0, -0.1), (0.18, -0.3), (-0.18, -0.3)],  # Haut
-#             1: [(0.1, 0), (0.3, -0.18), (0.3, 0.18)],   # Droite
-#             2: [(0, 0.1), (0.18, 0.3), (-0.18, 0.3)],   # Bas
-#             3: [(-0.1, 0), (-0.3, -0.18), (-0.3, 0.18)],    # Gauche
-#         }
-
-#         triangle = triangle_offsets[robot.theta]
-#         triangle_x = [robot.y + dx for dx, dy in triangle]
-#         triangle_y = [robot.x + dy for dx, dy in triangle]
-#         ax.fill(triangle_x, triangle_y, color='black', label='Direction')
-#         out.clear_output(wait=True)
-#         with out:
-#             plt.show()
-        # plt.close(fig)  
-
-class state_robot:
-    def __init__(self, x, y, theta):
-        """
-        Class to represent the state of the robot
-        x: int, x position of the robot
-        y: int, y position of the robot
-        theta: int, "angle" of the robot 0 -> up, 1 -> right, 2 -> down, 3 -> left
-        """
-        self.x = x
-        self.y = y
-        self.theta = theta
-
-    # def move_up(self): not use
-    #     self.x -= 1
-
-    # def move_down(self):
-    #     self.x += 1
-
-    # def move_left(self):
-    #     self.y -= 1
-
-    # def move_right(self):
-    #     self.y += 1
-
-    def turn_left(self):
-        self.theta = (self.theta - 1) % 4
-
-    def turn_right(self):
-        self.theta = (self.theta + 1) % 4
-
-    def __str__(self):
-        return f"x: {self.x}, y: {self.y}, theta: {self.theta}"
-    
-    def __repr__(self):
-        return f"x: {self.x}, y: {self.y}, theta: {self.theta}"
-    
-    def __eq__(self, other):
-        return self.x == other.x and self.y == other.y and self.theta == other.theta
-    
-    def __hash__(self):
-        return hash((self.x, self.y, self.theta))
-
+from .tools import _display_world, _save_world
+from .Robot import Robot 
 
 class gridWorld:
     def __init__(self, x=0, y=0, theta=0, world=None):
@@ -186,7 +38,7 @@ class gridWorld:
             raise ValueError("The robot is in a wall")
         print(f"The robot is in : { self.world[x, y]}  x: {x} y: {y}")
         print(f"World : {self.world}")
-        self.robot = state_robot(x, y, theta)
+        self.robot = Robot(x, y, theta)
 
         self._box_obstacle_encountered = []
         self._box_feel = []        
@@ -203,7 +55,7 @@ class gridWorld:
     def get_robot(self):
         return self.robot
     
-    def display_world(self, out:Output=None):
+    def display_world(self):
         """
         Display the world with the robot
         """
@@ -212,7 +64,7 @@ class gridWorld:
             world_seen[y, x] = 2
         for x, y in self._box_feel:
             world_seen[y, x] = 3
-        _display_world(world_seen, self.robot, out)
+        _display_world(world_seen, self.robot)
         
     def save_world(self, path="imgToGif"):
         """

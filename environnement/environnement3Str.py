@@ -5,7 +5,15 @@ class Environnement3(Environnement):
     def __init__(self):
         """ Initializing Environment3 """
         self.previous_action = 'a'
-
+        
+    def get_actions(self):
+        """Return the list of actions in this environment"""
+        return ['a', 'b']
+    
+    def get_outcomes(self):
+        """Return the list of outcomes in this environment"""
+        return ['x', 'y']
+    
     def get_actions(self):
         """Return the list of actions in this environment"""
         return ['a', 'b']
