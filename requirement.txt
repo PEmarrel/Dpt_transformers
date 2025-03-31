@@ -1,0 +1,6 @@
+# ipykernel for jupiter nootbook
+torch
+matplotlib
+tqdm
+pandas
+ipywidgets
