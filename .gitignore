@@ -176,6 +176,8 @@ test/
 **/*.png
 **/*.gif
 *.gif
+*.mp4
+**/*.mp4
 
 # vscode
 .vscode/
