@@ -47,6 +47,9 @@ class LSTM_Classifeur(nn.Module):
 class LSTM_GenText(nn.Module):
     def __init__(self, num_emb, num_layers=1, emb_size=128, hidden_size=128, dropout=0.25):
         super(LSTM_GenText, self).__init__()
+        self.num_layers = num_layers
+        self.hidden_size = hidden_size
+        self.num_emb = num_emb
         
         self.embedding = nn.Embedding(num_emb, emb_size)
 
