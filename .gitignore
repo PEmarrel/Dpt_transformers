@@ -178,6 +178,7 @@ test/
 *.gif
 *.mp4
 **/*.mp4
+movie/
 
 # vscode
 .vscode/
