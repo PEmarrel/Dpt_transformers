@@ -75,6 +75,36 @@ class LSTM_GenText(nn.Module):
                 
         return self.mlp_out(output), hidden_out, mem_out
     
+class LSTM_representation(nn.Module):
+    def __init__(self, num_emb, num_layers=1, emb_size=128, hidden_size=128, dropout=0.25):
+        super(LSTM_representation, self).__init__()
+        self.num_layers = num_layers
+        self.hidden_size = hidden_size
+        self.num_emb = num_emb
+        
+        self.embedding = nn.Embedding(num_emb, emb_size)
+
+        self.mlp_emb = nn.Sequential(nn.Linear(emb_size, emb_size),
+                                     nn.LayerNorm(emb_size),
+                                     nn.ELU(),
+                                     nn.Linear(emb_size, emb_size))
+        
+        self.lstm:nn.LSTM = nn.LSTM(input_size=emb_size, hidden_size=hidden_size, 
+                            num_layers=num_layers, batch_first=True, dropout=dropout, bidirectional=True)
+
+        self.mlp_out = nn.Sequential(nn.Linear(hidden_size * 2, hidden_size),
+                                     nn.LayerNorm(hidden_size),
+                                     nn.ELU(),
+                                     nn.Dropout(dropout),
+                                     nn.Linear(hidden_size, num_emb))
+        
+    def forward(self, input_seq, hidden_in, mem_in):
+        input_embs = self.embedding(input_seq)
+        input_embs = self.mlp_emb(input_embs)
+        output, (hidden_out, mem_out) = self.lstm(input_embs, (hidden_in, mem_in))
+                
+        return self.mlp_out(output), hidden_out, mem_out
+    
 class LSTM_Multi_Tasks(nn.Module):
     def __init__(self, num_emb, output_size, tasks:int, num_layers=1, hidden_size=128, dropout=0.5):
         super(LSTM_Multi_Tasks, self).__init__()
