@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+import os
 
 from environnement.environnement import Environnement as env
 
@@ -188,3 +190,109 @@ def find_sub_list(liste):
             if pattern[str(liste[i:i+3])]["fb"] != liste[i + 3]:
                 pattern[str(liste[i:i+3])]["count"] = -1
     return pattern
+
+def creat_plot_vision_agent(array, x, y, theta):
+    cmap = mcolors.ListedColormap(["white", "black", "red", "blue", "green", "yellow"])
+    bounds = [-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5]
+    norm = mcolors.BoundaryNorm(bounds, cmap.N)
+
+    fig, ax = plt.subplots(figsize=(5, 5))
+    ax.imshow(array, cmap=cmap, norm=norm)
+    ax.grid(False)
+
+    if theta == 0:
+        plt.scatter(y, x, s=1000, marker='^')
+        tip = (y, x-0.35)
+    elif theta == 1:
+        plt.scatter(y, x, s=1000, marker='>')
+        tip = (y+0.35, x)
+    elif theta == 2:
+        plt.scatter(y, x, s=1000, marker='v')
+        tip = (y, x+0.35)
+    elif theta == 3:
+        plt.scatter(y, x, s=1000, marker='<')
+        tip = (y-0.35, x)
+
+    ax.scatter(*tip, color='green', s=50)  # Tip of the triangle in red
+
+    return fig, ax
+
+def update_position(array, x, y, theta, act, fb):   
+    direction_map = {
+        0: {'forward': (x-1, y), 'feel_front': (x-1, y), 'feel_left': (x, y-1), 'feel_right': (x, y+1)},
+        1: {'forward': (x, y+1), 'feel_front': (x, y+1), 'feel_left': (x-1, y), 'feel_right': (x+1, y)},
+        2: {'forward': (x+1, y), 'feel_front': (x+1, y), 'feel_left': (x, y+1), 'feel_right': (x, y-1)},
+        3: {'forward': (x, y-1), 'feel_front': (x, y-1), 'feel_left': (x+1, y), 'feel_right': (x-1, y)}
+    }
+
+    # Update the position or sense based on the action
+    if act in direction_map[theta]:
+        nx, ny = direction_map[theta][act]            
+        if act == 'forward' and fb == 'empty':
+            x, y = nx, ny
+        array[nx, ny] = 3 if fb == 'empty' else 2
+        if fb == '<pad>':
+            array[nx, ny] = 6
+
+    return x, y, array
+
+def process_sequence(seq, size:int, path:str|None=None):
+    """
+    Process a sequence of actions and feedbacks, updating the array and position of the agent.
+    Args:
+        seq (list): Sequence of actions and feedbacks.
+        size (int): Max size of environment.
+        path (str|None): Path to save the plot (optional).
+    Returns:
+        list: List of arrays representing the memory space of agent at each step.
+    """
+    size *= 2
+    array = np.ones((size, size))
+    x, y = size // 2, size // 2
+    theta = 0
+    array[x, y] = 3
+    
+    list_array = []
+
+    for i in range(0, len(seq), 2):
+        act, fb = seq[i], seq[i + 1]
+
+        if act == 'turn_left':
+            theta = (theta - 1) % 4
+            if fb == '<pad>':
+                array[x, y] = 6
+        elif act == 'turn_right':
+            theta = (theta + 1) % 4
+            if fb == '<pad>':
+                array[x, y] = 6
+        else:
+            x, y, array = update_position(array, x, y, theta, act, fb)
+        list_array.append(array.copy())
+        
+        if path is not None:
+            fig, ax = creat_plot_vision_agent(array, x, y, theta)
+            number = str(len(os.listdir(path)))
+            plt.savefig(path + '/' + number + ".png")
+            plt.close(fig)
+
+    return list_array
+
+def info_in_memory(list_array, id_info = 6):
+    x, y = np.where(list_array[-1] == id_info)
+    return list_array[-2] [x, y] [0] != 1
+
+def info_in_seq(seq, size):
+    list_array = process_sequence(seq, size, None)
+    x, y = np.where(list_array[-1] == 6)
+    return list_array[-2] [x, y] [0] != 1
+    
+def info_step_in_memory(list_array, id_info = 6):
+    """
+    Return step where agent have the id_info in memory
+    If don't have info, return -1
+    """
+    x, y = np.where(list_array[-1] == id_info)
+    for i in range(len(list_array) - 1):
+        if list_array[i][x, y] != 1:
+            return i
+    return -1

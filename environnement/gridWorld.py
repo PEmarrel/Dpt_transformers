@@ -44,7 +44,7 @@ class gridWorld:
         self._box_feel = []        
 
     def get_actions(self):
-        return self.all_actions
+        return self.all_actions.copy()
     
     def get_outcomes(self):
         return list(self.outcomes.values())

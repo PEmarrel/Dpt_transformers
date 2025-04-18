@@ -4,6 +4,7 @@ import matplotlib.colors as mcolors
 from IPython.display import display, update_display
 from ipywidgets import Output
 import os
+from .tools import _save_world, _display_world
 
 class state_robot:
     def __init__(self, x, y, theta):
