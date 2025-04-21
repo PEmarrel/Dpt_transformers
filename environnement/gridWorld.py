@@ -55,6 +55,18 @@ class gridWorld:
     def get_robot(self):
         return self.robot
     
+    def get_coo(self):
+        """
+        Get the coordinates of the robot
+        """
+        return self.robot.x, self.robot.y
+    
+    def get_theta(self):
+        """
+        Get the orientation of the robot
+        """
+        return self.robot.theta
+    
     def display_world(self):
         """
         Display the world with the robot

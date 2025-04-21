@@ -92,15 +92,17 @@ class LSTM_representation(nn.Module):
         self.lstm:nn.LSTM = nn.LSTM(input_size=emb_size, hidden_size=hidden_size, 
                             num_layers=num_layers, batch_first=True, dropout=dropout, bidirectional=True)
 
-        self.mlp_out = nn.Sequential(nn.Linear(hidden_size * 2, hidden_size),
-                                     nn.LayerNorm(hidden_size),
-                                     nn.ELU(),
-                                     nn.Dropout(dropout),
-                                     nn.Linear(hidden_size, num_emb))
+        # self.mlp_out = nn.Sequential(nn.Linear(hidden_size * 2, hidden_size),
+        #                              nn.LayerNorm(hidden_size),
+        #                              nn.ELU(),
+        #                              nn.Dropout(dropout),
+        #                              nn.Linear(hidden_size, num_emb))
+    
+        self.mlp_out = nn.Sequential(nn.Linear(hidden_size * 2, num_emb))
         
     def forward(self, input_seq, hidden_in, mem_in):
         input_embs = self.embedding(input_seq)
-        input_embs = self.mlp_emb(input_embs)
+        # input_embs = self.mlp_emb(input_embs)
         output, (hidden_out, mem_out) = self.lstm(input_embs, (hidden_in, mem_in))
                 
         return self.mlp_out(output), hidden_out, mem_out
