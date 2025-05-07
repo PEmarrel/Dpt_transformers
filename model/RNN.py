@@ -84,10 +84,10 @@ class LSTM_representation(nn.Module):
         
         self.embedding = nn.Embedding(num_emb, emb_size)
 
-        self.mlp_emb = nn.Sequential(nn.Linear(emb_size, emb_size),
-                                     nn.LayerNorm(emb_size),
-                                     nn.ELU(),
-                                     nn.Linear(emb_size, emb_size))
+        # self.mlp_emb = nn.Sequential(nn.Linear(emb_size, emb_size),
+        #                              nn.LayerNorm(emb_size),
+        #                              nn.ELU(),
+        #                              nn.Linear(emb_size, emb_size))
         
         self.lstm:nn.LSTM = nn.LSTM(input_size=emb_size, hidden_size=hidden_size, 
                             num_layers=num_layers, batch_first=True, dropout=dropout, bidirectional=True)

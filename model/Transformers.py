@@ -12,20 +12,14 @@ class MultiHeadAttention(nn.Module):
         self.d_out = d_out
         self.num_heads = num_heads
         self.head_dim = d_out // num_heads
-        
-        # self.W_query = nn.Linear(d_in, d_out, bias = qkv_bias)
-        # self.W_key = nn.Linear(d_in, d_out, bias = qkv_bias)
-        # self.W_value = nn.Linear(d_in, d_out, bias = qkv_bias) 
-        # Don't use this because we want to have only one projection to optimize
-        # To have only one projection we use the following line
         self.W_qkv = nn.Linear(d_in, 3 * d_out, bias=qkv_bias).to(device)
 
         self.dropout = nn.Dropout(dropout).to(device)
         self.out_proj = nn.Linear(d_out, d_out).to(device)
-        # If we want to see past
+        # If we want to see only past
         mask = torch.triu(torch.ones(context_length,context_length), diagonal=1).to(device)
         
-        # if we want to see future
+        # if we want to see only future
         # mask = torch.tril(torch.ones(context_length,context_length), diagonal=-1).to(device)
         
         # If we want to see all the context
@@ -79,13 +73,12 @@ class MultiHeadAttention(nn.Module):
                                values
                             ).transpose(1, 2).reshape(b, num_tokens, self.d_out)
         
-        
         return self.out_proj(context)
     
 class FeedForward(nn.Module):
     def __init__(self,cfg):
         super().__init__()
-        # TODO fct FFN we can change the number of layers
+        # TODO fct FFN we can remove or add some layers
         self.layers = nn.Sequential(
             nn.Linear(cfg["emb_dim"], cfg["emb_dim"] // 2, bias=cfg["qkv_bias"]),
             nn.GELU(),
@@ -114,14 +107,10 @@ class TransformerBlock(nn.Module):
         self.dropout = nn.Dropout(cfg["drop_rate"]).to(cfg["device"])
         
     def forward(self,x):
-        # print("we are in one transformer block")
-        # print(x.shape)
-        # print(x)
         shortcut = x
         x = self.norm1(x)
         x = self.att(x)
-        # print("after att", x.shape)
-        # print(x)
+
         x = self.dropout(x)
 
         x = x + shortcut
@@ -130,8 +119,22 @@ class TransformerBlock(nn.Module):
         x = self.norm2(x)
         x = self.ff(x)
         x = self.dropout(x)
-        x = x+ shortcut
-        # print(x.shape)
-        # print(x)
-        # print('end trs block')
+        x = x + shortcut
+        
+        return x
+
+class Transformer(nn.Module):
+    def __init__(self, cfg):
+        super().__init__()
+        self.cfg = cfg
+        
+        self.trf_blocks = nn.ModuleList([
+            TransformerBlock(cfg) for _ in range(cfg["n_layers"])
+        ])
+        self.norm = nn.LayerNorm(cfg["emb_dim"]).to(cfg["device"])
+        
+    def forward(self,x):
+        for block in self.trf_blocks:
+            x = block(x)
+        x = self.norm(x)
         return x
