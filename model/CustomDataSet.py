@@ -4,6 +4,17 @@ from torch.utils.data import Dataset
 import torch.nn.functional as F
 import torch
 
+class SimpleDataSet(Dataset):
+    def __init__(self, data:list[list]):
+        self.data = torch.tensor(data)
+        print(self.data)
+
+    def __len__(self):
+        return self.data.size()[1]
+
+    def __getitem__(self, idx):
+        return self.data[idx]
+
 class CustomDataSet(Dataset):
     def __init__(self, actions:list, outcomes:list, dim_out:int, context_lenght:int, tokenizer=None):
         """
