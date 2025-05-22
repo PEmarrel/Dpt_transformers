@@ -231,7 +231,7 @@ def update_position(array, x, y, theta, act, fb):
         if act == 'forward' and fb == 'empty':
             x, y = nx, ny
         array[nx, ny] = 3 if fb == 'empty' else 2
-        if fb == '<pad>':
+        if fb == '<pad>' or fb == '<mask>':
             array[nx, ny] = 6
 
     return x, y, array
@@ -259,11 +259,11 @@ def process_sequence(seq, size:int, path:str|None=None):
 
         if act == 'turn_left':
             theta = (theta - 1) % 4
-            if fb == '<pad>':
+            if fb == '<pad>' or fb == '<mask>':
                 array[x, y] = 6
         elif act == 'turn_right':
             theta = (theta + 1) % 4
-            if fb == '<pad>':
+            if fb == '<pad>' or fb == '<mask>':
                 array[x, y] = 6
         else:
             x, y, array = update_position(array, x, y, theta, act, fb)
@@ -275,14 +275,61 @@ def process_sequence(seq, size:int, path:str|None=None):
             plt.savefig(path + '/' + number + ".png")
             plt.close(fig)
 
-    return list_array
+    return list_array, x, y, theta
+
+def process_sequence_inter(seq, size:int, path:str|None=None):
+    """
+    Process a sequence of actions and feedbacks, updating the array and position of the agent.
+    Args:
+        seq (list): Sequence of actions and feedbacks.
+        size (int): Max size of environment.
+        path (str|None): Path to save the plot (optional).
+    Returns:
+        list: List of arrays representing the memory space of agent at each step.
+    """
+    size *= 2
+    array = np.ones((size, size))
+    x, y = size // 2, size // 2
+    theta = 0
+    array[x, y] = 3
+    
+    list_array = []
+
+    for element in seq:
+        if type(element) == tuple:
+            act, fb = element
+        else:
+            act, fb = element, '<pad>'
+        if act == 'turn_left':
+            theta = (theta - 1) % 4
+            if fb == '<pad>' or fb == '<mask>':
+                array[x, y] = 6
+        elif act == 'turn_right':
+            theta = (theta + 1) % 4
+            if fb == '<pad>' or fb == '<mask>':
+                array[x, y] = 6
+        else:
+            x, y, array = update_position(array, x, y, theta, act, fb)
+        list_array.append(array.copy())
+        
+        if path is not None:
+            fig, ax = creat_plot_vision_agent(array, x, y, theta)
+            number = str(len(os.listdir(path)))
+            plt.savefig(path + '/' + number + ".png")
+            plt.close(fig)
+
+    return list_array, x, y, theta
 
 def info_in_memory(list_array, id_info = 6):
     x, y = np.where(list_array[-1] == id_info)
     return list_array[-2] [x, y] [0] != 1
 
 def info_in_seq(seq, size):
-    list_array = process_sequence(seq, size, None)
+    if type(seq[0]) == tuple:
+        list_array, _, _, _ = process_sequence_inter(seq, size, None)
+    else:
+        list_array, _, _, _ = process_sequence(seq, size, None)
+        
     x, y = np.where(list_array[-1] == 6)
     return list_array[-2] [x, y] [0] != 1
     
@@ -296,3 +343,44 @@ def info_step_in_memory(list_array, id_info = 6):
         if list_array[i][x, y] != 1:
             return i
     return -1
+
+def feel_info_end_sequence(seq: list, size: int, tuple_info:tuple[list, int, int, int]=None):
+    """
+    This function analyzes a sequence of interactions and determines for each feeling if
+    sequence have information.
+
+    Parameters:
+    seq (list): A list of interaction in this format ['action', 'feedback', ...].
+    size (int): This size must correspond to twice the maximum length of the environment.
+
+    Returns:
+    list: A list of boolean values indicating whether each "feeling" action at the end 
+          of the sequence provides information (True) or not (False).
+    """
+    last_step_info = -2 if seq[-1] == '<pad>' else -1
+    if tuple_info is None:
+        if type(seq[0]) == tuple:
+            tuple_info = process_sequence_inter(seq, size, None)
+        else:
+            tuple_info = process_sequence(seq, size, None)
+    list_array, x, y, theta = tuple_info
+    directions_x = [
+        -1,
+        0,
+        1,
+        0,
+    ]
+    directions_y = [
+        0,
+        1,
+        0,
+        -1,
+    ]
+
+    feel_bool = []
+    for i in range(-1, 2):
+        theta_feel = (theta + i) % 4
+        x_feel = x + directions_x[theta_feel]
+        y_feel = y + directions_y[theta_feel]
+        feel_bool.append(bool(list_array[last_step_info] [x_feel, y_feel] != 1))
+    return feel_bool
